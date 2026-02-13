@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"Courier New"', 'Courier', 'monospace'],
+                        serif: ['"Times New Roman"', 'serif'],
+                    },
+                    colors: {
+                        'lavender-blush': '#fff0f5',
+                        'hot-pink': '#ff69b4',
+                        'deep-pink': '#ff1493',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* --- Custom Background (Heart Pattern) --- */
+        body {
+            /* Keep custom background logic as it is complex to port 1:1 to utility classes */
+            margin: 0;
+            padding: 0;
+            /* font-family handled by Tailwind font-mono */
+            /* overflow-x handled by Tailwind overflow-x-hidden */
+            /* background-color handled by Tailwind bg-white */
+
+    /* --- Konfigurasi Hati Baru --- */
+    
+    /* 1. Kita mendefinisikan gambar hatinya sekali sebagai variabel agar kodenya rapi */
+        --heart-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 52.7C24.75 48.18 7.5 33.11 7.5 17.27 7.5 9.76 13.52 3.75 21 3.75c4.5 0 9 3.02 10.5 6.77C33 6.77 37.5 3.75 42 3.75c7.48 0 13.5 6.01 13.5 13.52 0 15.84-17.25 30.91-22.5 35.43L30 55.75z' fill='%23FFB6C1' fill-opacity='0.3' /%3E%3C/svg%3E");
+
+    /* 2. Menggunakan gambar hati tersebut beberapa kali (misal: 7 hati) */
+        background-image: var(--heart-image), var(--heart-image), var(--heart-image), var(--heart-image), var(--heart-image), var(--heart-image), var(--heart-image);
+
+    /* 3. PENTING: Jangan diulang (agar jumlahnya sedikit) */
+        background-repeat: no-repeat;
+
+    /* 4. Mengatur POSISI ACAK (Koordinat X% Y% untuk setiap hati) 
+       Ini yang membuat mereka tampak tersebar dan berjarak */
+        background-position: 
+            10% 15%,  /* Hati 1: Kiri atas */
+            85% 25%,  /* Hati 2: Kanan atas */
+            5% 65%,   /* Hati 3: Kiri tengah */
+            95% 55%,  /* Hati 4: Kanan tengah */
+            20% 90%,  /* Hati 5: Kiri bawah */
+            75% 85%,  /* Hati 6: Kanan bawah */
+            50% 40%;  /* Hati 7: Tengah agak atas */
+
+    /* 5. Mengatur UKURAN BESAR (Lebar Tinggi untuk setiap hati)
+       Variasikan ukurannya agar terlihat lebih alami */
+        background-size: 
+            80px 80px,   /* Ukuran Hati 1 */
+            100px 100px, /* Ukuran Hati 2 (Paling besar) */
+            70px 70px,   /* Ukuran Hati 3 */
+            90px 90px,   /* Ukuran Hati 4 */
+            65px 65px,   /* Ukuran Hati 5 */
+            85px 85px,   /* Ukuran Hati 6 */
+            75px 75px;   /* Ukuran Hati 7 */
+    
+    /* Agar background tetap diam saat discroll (opsional, terlihat lebih elegan) */
+        background-attachment: fixed;
+}
+
+    </style>
+</head>
+<body class="font-mono overflow-x-hidden bg-white text-black">
+    <style>
+        /* Keeping some animation keyframes as custom CCS is cleaner */
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(0); opacity: 0; }
+        }
+        .heart-trail {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 9999;
+        }
+    </style>
+
+    <!-- Modal Overlay Container -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-50 hidden justify-center items-center">
+        <!-- Modal 1: Konfirmasi -->
+        <div id="modal-confirm" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
+            <h3 class="mt-0 mb-4 text-lg font-bold">Terima atau tidak?</h3>
+            <div class="flex justify-center gap-2.5">
+                <button class="bg-green-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-green-600 rounded" onclick="showPasswordModal()">Iya</button>
+                <button class="bg-red-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-red-600 rounded" onclick="handleNo()">Tidak</button>
+            </div>
+        </div>
+
+        <!-- Modal 2: Password -->
+        <div id="modal-password" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
+            <h3 class="mt-0 mb-4 text-lg font-bold">Password?</h3>
+            <input type="password" id="passwordInput" placeholder="Masukkan password..." class="w-full p-2 mb-2 border-2 border-black text-sm font-mono box-border rounded">
+            <p class="text-[10px] -mt-1 text-gray-500">*clue : pass laptop ku, tanggal besok</p>
+            <br>
+            <button class="bg-blue-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-blue-600 mt-2 rounded" onclick="checkPassword()">Submit</button>
+        </div>
+
+        <!-- Modal 3: Error -->
+        <div id="modal-error" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+             <h3 class="mt-0 mb-4 text-lg font-bold text-red-600">Kok salah sayangg ☹️</h3>
+            <p class="mb-5 text-sm">ingat ingat lagi cayangggkuu ☹️</p>
+            <button class="bg-yellow-400 text-black border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-yellow-500 rounded" onclick="retryPassword()">Isi Ulang Password</button>
+        </div>
+        
+        <!-- Modal 4: Force Yes (New) -->
+        <div id="modal-force-yes" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+             <h3 class="mt-0 mb-4 text-lg font-bold">Harus iya sih 🙄</h3>
+        </div>
+    </div>
+
+    <!-- Game Container with Burger Menu -->
+    <div id="game-container" class="flex justify-center items-center h-screen bg-transparent">
+        <!-- Burger Menu -->
+        <div id="burger-menu-container" class="absolute top-2.5 left-2.5 z-[100]">
+            <div id="burger-icon" onclick="toggleMenu()" class="text-3xl cursor-pointer text-black select-none drop-shadow-[2px_2px_0_#fff]">☰</div>
+            <div id="menu-dropdown" class="hidden bg-white border-2 border-black p-2.5 rounded mt-1.5 shadow-[3px_3px_0px_#000]">
+                <div onclick="openValentinePassword()" class="cursor-pointer font-mono font-bold text-deep-pink hover:text-pink-600">Ucapan Valentine 💌</div>
+            </div>
+        </div>
+
+        <div id="game-instructions" class="absolute top-5 left-1/2 -translate-x-1/2 bg-white/80 px-5 py-2.5 rounded-lg text-center border-2 border-black shadow-md">
+            <p>Gunakan A / D untuk bergerak.</p>
+            <p>W / Spasi untuk lompat & interaksi.</p>
+            <p>Temui Tigor di dalam rumah!</p>
+        </div>
+        <canvas id="gameCanvas" width="800" height="400" class="border-4 border-black bg-transparent pixelated shadow-xl"></canvas>
+    </div>
+
+    <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative">
+        <!-- Back Button -->
+        <button id="back-to-game-btn" onclick="backToGame()" class="absolute top-5 left-5 bg-hot-pink text-white border-2 border-white py-2 px-4 rounded-full cursor-pointer font-bold font-mono shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600">
+            ← Back to Game
+        </button>
+        
+        <h1 class="main-title text-deep-pink text-5xl mb-8 uppercase tracking-widest font-bold">Happy Valentine's Day!</h1>
+        <!-- Verse Carousel -->
+        <div class="verse-wrapper relative w-4/5 mx-auto my-5">
+            <div class="verse-controls absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+                <button onclick="prevVerse()" class="bg-hot-pink text-white border-none rounded-full w-6 h-6 cursor-pointer font-bold hover:bg-pink-600">&#10094;</button>
+                <button onclick="nextVerse()" class="bg-hot-pink text-white border-none rounded-full w-6 h-6 cursor-pointer font-bold hover:bg-pink-600">&#10095;</button>
+            </div>
+            <div class="verse-container bg-lavender-blush border-l-[5px] border-hot-pink rounded overflow-hidden w-full">
+                <div class="verse-track flex transition-transform duration-500 ease-in-out" id="verseTrack">
+                    <!-- Slide 1 -->
+                    <div class="verse-slide min-w-full box-border p-4 font-serif italic text-gray-600 text-center">
+                        <strong>Philippians 1:3</strong><br>
+                        "I thank my God every time I remember you."
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="verse-slide min-w-full box-border p-4 font-serif italic text-gray-600 text-center">
+                        <strong>Jeremiah 29:11</strong><br>
+                        "For I know the plans I have for you,” declares the LORD, “plans to prosper you and not to harm you, plans to give you hope and a future."
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="verse-slide min-w-full box-border p-4 font-serif italic text-gray-600 text-center">
+                        <strong>Psalm 55:22</strong><br>
+                        "Cast your cares on the LORD and he will sustain you."
+                    </div>
+                     <!-- Slide 4 -->
+                     <div class="verse-slide min-w-full box-border p-4 font-serif italic text-gray-600 text-center">
+                        <strong>Ecclesiastes 4:9–12</strong><br>
+                        "Two are better than one... A cord of three strands is not quickly broken."
+                    </div>
+                    <!-- Slide 1 Copy (For Infinite Loop) -->
+                    <div class="verse-slide min-w-full box-border p-4 font-serif italic text-gray-600 text-center">
+                        <strong>Philippians 1:3</strong><br>
+                        "I thank my God every time I remember you."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="verse-progress-container flex justify-center gap-2 mt-4">
+            <div class="progress-segment active w-8 h-1 bg-pink-300 rounded transition-all duration-300 shadow-[0_0_8px_#ff1493] bg-hot-pink w-10" id="seg-0"></div>
+            <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-1"></div>
+            <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-2"></div>
+            <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-3"></div>
+        </div>
+
+        <div class="message-container bg-white border-2 border-dashed border-hot-pink p-5 mx-auto my-5 w-4/5 rounded-2xl">
+            <strong class="text-xl text-deep-pink">HAPPY VALENTINE'S DAYY SAYANGGGG</strong>
+            
+            <p class="my-4">
+                Semoga di hari kasih sayang ini, kamu semakin terberkati dan tumbuh di dalam Dia yang lebih dulu mengasihi kita. ✨
+            </p>
+            
+            <p class="text-deep-pink font-bold text-lg">
+                BTW BESOK KITA SUDAH 1 TAHUNNN! 🎉
+            </p>
+            
+            <p class="my-4">
+                Thank you yaa sudah mau bertahan sampe sejauh inii :(( <br>
+                Semoga sehabis ini kita makin langgeng dan kuat di dalam Tuhan.
+            </p>
+            
+            <p>
+                Semangat terus yahh cayanggg di tengah kesibukannya. Semoga apa yang ko impikan Tuhan wujudkan. <br>
+                Btw ada beberapa Ayat Alkitab di atas, dibaca yahh :))
+            </p>
+        </div>
+
+        <div class="photo-gallery grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8 px-5">
+            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[-2deg] transition-transform hover:scale-105 hover:z-10 relative">
+                <img src="assets/IMG-20250510-WA0075.jpg" alt="Foto 1" class="w-full h-auto block">
+            </div>
+            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[3deg] transition-transform hover:scale-105 hover:z-10 relative">
+                <img src="assets/IMG-20250516-WA0088.jpg" alt="Foto 2" class="w-full h-auto block">
+            </div>
+            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[-1deg] transition-transform hover:scale-105 hover:z-10 relative">
+                <img src="assets/IMG-20250811-WA0072.jpg" alt="Foto 3" class="w-full h-auto block">
+        </div>
+    </div>
+
+    <audio id="romanticMusic" loop>
+        <source src="placeholder-song.mp3" type="audio/mpeg">
+        Browser kamu tidak mendukung elemen audio.
+    </audio>
+
+
+    <script>
+        // ================= KONFIGURASI PENTING =================
+        // 👉 PERHATIAN: UBAH PASSWORD DI SINI!
+        const correctPassword = "150225"; 
+
+        // ================= ASSETS GAMBAR =================
+        const bgOutside = new Image();
+        bgOutside.src = "assets/bg rumah.png";
+
+        const bgInside = new Image();
+        bgInside.src = "assets/bg  dalam rumah.png"; 
+
+        // --- ASSETS KARAKTER (MICHAY) ---
+        const imgMichayIdle = new Image();
+        imgMichayIdle.src = "assets/michay.png";
+
+        const imgMichayWalk = [new Image(), new Image()];
+        imgMichayWalk[0].src = "assets/michay jalan 1.png";
+        imgMichayWalk[1].src = "assets/michay jalan 2.png";
+
+        const imgMichayJump = [new Image(), new Image(), new Image()];
+        imgMichayJump[0].src = "assets/michay lompat 1.png";
+        imgMichayJump[1].src = "assets/michay lompat 2.png";
+        imgMichayJump[2].src = "assets/michay lompat 3.png";
+
+        // --- ASSETS NPC (TIGOR) ---
+        const imgTigor = new Image();
+        imgTigor.src = "assets/tigor.png";
+
+        // ================= LOGIKA GAME =================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameState = 'playing'; // 'playing' or 'finished'
+        let isInside = false; // Status apakah pemain di dalam rumah
+
+        // Objek Pemain (Cewek - Michay)
+        const player = {
+            x: 50,
+            y: 300,
+            width: 70, // Sesuaikan ukuran sprite
+            height: 100, // Sesuaikan ukuran sprite 
+            speed: 5,
+            dx: 0,
+            dy: 0,
+            jumpStrength: -12,
+            gravity: 0.6,
+            grounded: false,
+            facingRight: true, // Untuk membalik gambar jika jalan ke kiri
+            
+            // Animasi
+            state: 'idle', // 'idle', 'walk', 'jump'
+            frameIndex: 0,
+            frameTimer: 0,
+            frameSpeed: 10 // Kecepatan ganti frame
+        };
+
+        // Objek NPC (Cowok/Kamu)
+        // Ukuran Tigor dibuat sedikit lebih besar dari Michay (saat di dalam rumah)
+        // Michay di dalam rumah: lebar ~75, tinggi ~120 (karena skala 1.5x)
+        // Tigor kita buat: lebar 90, tinggi 130
+        const npc = {
+            x: 400, // Posisi NPC di dalam rumah
+            y: 170, // Disesuaikan agar napak tanah (GroundY 320 - Height 130 = 190)
+            width: 110,
+            height: 150,
+            hasAsked: false,
+            speechTimer: 0,
+            hasTriggeredModal: false
+        };
+
+        // Lingkungan Game
+        const groundHeight = 80; 
+        const doorPositionX = 400; // Posisi pintu di TENGAH (sesuai request)
+
+        const keys = {
+            right: false,
+            left: false,
+            up: false
+        };
+
+        // Event Listeners untuk Kontrol
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyD') keys.right = true;
+            if (e.code === 'KeyA') keys.left = true;
+            
+            // Logika Lompat ATAU Masuk/Keluar Pintu
+            if (e.code === 'KeyW' || e.code === 'Space') {
+                if (!isInside) {
+                     // MASUK RUMAH
+                    if (Math.abs(player.x - doorPositionX) < 50) {
+                        enterHouse();
+                    } else if (player.grounded) {
+                        player.dy = player.jumpStrength;
+                        player.grounded = false;
+                    }
+                } else {
+                    // KELUAR RUMAH (Area pintu di kiri agak lebar)
+                    if (player.x < 180) {
+                        exitHouse();
+                    } else if (player.grounded) {
+                         player.dy = player.jumpStrength;
+                         player.grounded = false;
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyD') keys.right = false;
+            if (e.code === 'KeyA') keys.left = false;
+        });
+
+        function enterHouse() {
+            isInside = true;
+            player.x = 50; // Reset posisi ke kiri ruangan
+        }
+
+        function exitHouse() {
+            isInside = false;
+            player.x = doorPositionX; // Kembali ke depan pintu luar
+        }
+
+        // Fungsi Update Fisika & Animasi
+        function updateGame() {
+            if (gameState !== 'playing') return;
+
+            // --- 1. Update Gerakan ---
+            if (keys.right) {
+                player.dx = player.speed;
+                player.facingRight = true;
+                player.state = 'walk';
+            } else if (keys.left) {
+                player.dx = -player.speed;
+                player.facingRight = false;
+                player.state = 'walk';
+            } else {
+                player.dx = 0;
+                player.state = 'idle';
+            }
+
+            player.x += player.dx;
+
+            // Batas Kiri Canvas
+            if (player.x < 0) player.x = 0;
+            
+            // Batas Kanan Canvas
+            if (!isInside) {
+                 if (player.x + player.width > canvas.width) {
+                    player.x = canvas.width - player.width;
+                 }
+            } else {
+                if (player.x + player.width > canvas.width) {
+                    player.x = canvas.width - player.width;
+                }
+            }
+
+            // Gerakan Vertikal (Gravitasi)
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            // Cek Tanah
+            const groundY = canvas.height - groundHeight;
+            if (player.y + player.height > groundY) {
+                player.y = groundY - player.height;
+                player.dy = 0;
+                player.grounded = true;
+            } else {
+                // Jika di udara, paksa state jadi jump
+                player.state = 'jump';
+            }
+
+            // --- 2. Update Animasi ---
+            player.frameTimer++;
+            if (player.frameTimer >= player.frameSpeed) {
+                player.frameTimer = 0;
+                
+                if (player.state === 'walk') {
+                    // Animasi Jalan: Frame 0 -> 1 -> 0 -> 1 ...
+                    player.frameIndex++;
+                    if (player.frameIndex >= imgMichayWalk.length) {
+                        player.frameIndex = 0;
+                    }
+                } else if (player.state === 'jump') {
+                    // Animasi Lompat: Frame 0 -> 1 -> 2 (lalu stop di 2 sampai mendarat)
+                    if (player.frameIndex < imgMichayJump.length - 1) {
+                         player.frameIndex++;
+                    }
+                } else {
+                    // Idle
+                    player.frameIndex = 0;
+                }
+            }
+
+            // Cek Interaksi dengan NPC
+            if (isInside) {
+                 // Tigor lebih besar, jadi hitboxnya lebih lebar. Kita sesuaikan jarak interaksi.
+                 const distanceToNPC = Math.abs(player.x - npc.x);
+                 
+                 // Update Dialog Timer jika dalam jarak tertentu (misal 200px)
+                 if (distanceToNPC < 200) {
+                     npc.speechTimer++;
+                     
+                     // Trigger Modal setelah selesai bicara (180 frame = 3 detik)
+                     if (npc.speechTimer >= 180 && !npc.hasTriggeredModal) {
+                         showConfirmModal();
+                         npc.hasTriggeredModal = true;
+                     }
+                 } else {
+                     npc.speechTimer = 0; // Reset jikaamenjauh
+                     npc.hasTriggeredModal = false; 
+                 }
+            }
+        }
+
+        // Fungsi Modal Controls
+        function showConfirmModal() {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-confirm').style.display = 'block';
+            gameState = 'paused'; // Pause game logic while modal open
+        }
+
+        function showPasswordModal() {
+            document.getElementById('modal-overlay').style.display = 'flex'; // Ensure overlay is visible (needed if opened from menu)
+            document.getElementById('modal-confirm').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'none';
+            document.getElementById('modal-password').style.display = 'block';
+            document.getElementById('passwordInput').value = ''; // Clear previous input
+            document.getElementById('passwordInput').focus();
+            gameState = 'paused'; // Ensure game is paused
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === correctPassword) {
+                closeModal();
+                finishGame();
+            } else {
+                document.getElementById('modal-password').style.display = 'none';
+                document.getElementById('modal-error').style.display = 'block';
+            }
+        }
+
+        function retryPassword() {
+            showPasswordModal();
+        }
+
+        function handleNo() {
+            document.getElementById('modal-confirm').style.display = 'none';
+            document.getElementById('modal-force-yes').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('modal-force-yes').style.display = 'none';
+                showPasswordModal();
+            }, 1500); // 1.5 detik
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('modal-confirm').style.display = 'none';
+            document.getElementById('modal-password').style.display = 'none';
+            document.getElementById('modal-error').style.display = 'none';
+            document.getElementById('modal-force-yes').style.display = 'none';
+            gameState = 'playing';
+        }
+
+        // Fungsi Menggambar Karakter
+        function drawPlayer() {
+            let currentImg;
+
+            // Tentukan gambar berdasarkan state
+            if (player.state === 'jump') {
+                // Pastikan index aman
+                let idx = Math.min(player.frameIndex, imgMichayJump.length - 1);
+                currentImg = imgMichayJump[idx];
+            } else if (player.state === 'walk') {
+                let idx = Math.min(player.frameIndex, imgMichayWalk.length - 1);
+                currentImg = imgMichayWalk[idx];
+            } else {
+                currentImg = imgMichayIdle;
+            }
+
+            // --- SKALA KARAKTER ---
+            // Jika di dalam rumah, gambar lebih besar (misal 1.5x)
+            let drawWidth = player.width;
+            let drawHeight = player.height;
+            
+            if (isInside) {
+                drawWidth = player.width * 1.5;
+                drawHeight = player.height * 1.5;
+            }
+
+            ctx.save(); // Simpan state canvas sebelum transformasi
+
+            if (!player.facingRight) {
+                // Flip Horizontal jika menghadap kiri
+                ctx.translate(player.x + drawWidth, player.y);
+                ctx.scale(-1, 1);
+                // Gambar di (0,0) relatif terhadap transformasi
+                if (currentImg && currentImg.complete) {
+                     let yOffset = isInside ? -(drawHeight - player.height) : 0;
+                     ctx.drawImage(currentImg, 0, yOffset, drawWidth, drawHeight);
+                } else {
+                    // Fallback kotak
+                    ctx.fillStyle = player.color;
+                    ctx.fillRect(0, 0, drawWidth, drawHeight);
+                }
+            } else {
+                // Normal kanan
+                ctx.translate(player.x, player.y);
+                
+                let yOffset = isInside ? -(drawHeight - player.height) : 0;
+                
+                if (currentImg && currentImg.complete) {
+                     ctx.drawImage(currentImg, 0, yOffset, drawWidth, drawHeight);
+                } else {
+                    ctx.fillStyle = player.color;
+                    ctx.fillRect(0, 0, drawWidth, drawHeight);
+                }
+            }
+
+            ctx.restore(); // Kembalikan state canvas
+        }
+
+        // Fungsi Menggambar Game
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Helper function untuk menggambar teks dalam kotak pixelated
+            function drawPixelText(text, centerX, bottomY) {
+                ctx.save();
+                ctx.font = 'bold 16px "Courier New", monospace';
+                const textWidth = ctx.measureText(text).width;
+                const boxPadding = 5;
+                const boxW = textWidth + (boxPadding * 2);
+                const boxH = 24;
+                const boxX = centerX - (boxW / 2);
+                const boxY = bottomY - boxH;
+
+                // Draw Box Background (White)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(boxX, boxY, boxW, boxH);
+
+                // Draw Box Border (Black)
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000000';
+                ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+                // Draw Text (Black)
+                ctx.fillStyle = '#000000';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, boxX + boxPadding, boxY + (boxH / 2));
+                ctx.restore();
+            }
+
+            if (!isInside) {
+                // --- SCENE 1: LUAR RUMAH ---
+                if (bgOutside.complete) {
+                    ctx.drawImage(bgOutside, 0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = '#87CEEB';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // Teks petunjuk di atas pintu
+                if (Math.abs(player.x - doorPositionX) < 50) {
+                     drawPixelText("Tekan W Untuk Masuk", doorPositionX, canvas.height - groundHeight - 110);
+                }
+            } else {
+                // --- SCENE 2: DALAM RUMAH ---
+                if (bgInside.complete) {
+                    ctx.drawImage(bgInside, 0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = '#FFE4B5';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // Teks petunjuk KELUAR (di sebelah kiri)
+                if (player.x < 180) {
+                    drawPixelText("Tekan W Untuk Keluar", 120, canvas.height - groundHeight - 180);
+                }
+
+                // NPC (Tigor) - Hanya di dalam
+                // Gambar Tigor (menghadap Michay)
+                if (imgTigor.complete) {
+                    ctx.save();
+                    
+                    // Logic flip: jika player di kiri NPC, Tigor harus menghadap KIRI.
+                    // Asumsi gambar asli tigor menghadap KANAN.
+                    // Scale(-1, 1) membalik gambar horizontal (menjadi menghadap Kiri).
+                    
+                    if (player.x < npc.x) {
+                        // Player di kiri, Tigor menghadap Kiri (Flip)
+                        ctx.translate(npc.x + npc.width, npc.y);
+                        ctx.scale(-1, 1);
+                        ctx.drawImage(imgTigor, 0, 0, npc.width, npc.height);
+                    } else {
+                        // Player di kanan, Tigor menghadap Kanan (Normal)
+                        ctx.drawImage(imgTigor, npc.x, npc.y, npc.width, npc.height);
+                    }
+                    
+                    ctx.restore();
+                } else {
+                    // Fallback kotak
+                    ctx.fillStyle = npc.color;
+                    ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
+                }
+                
+                // Label Nama NPC (Tigor) - Pixelated Box Style
+                // Posisi lebih rapat: boxY = npc.y - 10
+                const npcCenterX = npc.x + (npc.width / 2);
+                drawPixelText("Tigor", npcCenterX, npc.y - 10);
+
+                // --- DIALOGUE SYSTEM ---
+                // 1.5 detik = ~90 frame (asumsi 60fps)
+                if (npc.speechTimer > 0) {
+                    let speechText = "";
+                    if (npc.speechTimer < 90) {
+                        // 0 - 1.5 detik
+                        speechText = "hai sayangkuu";
+                    } else if (npc.speechTimer < 250) {
+                        // 1.5 - 3 detik
+                        speechText = "mauka kasih ko sesuatuu";
+                    }
+                    
+                    if (speechText) {
+                        // Gambar bubble di atas label nama (npc.y - 10 - 30 = npc.y - 40)
+                        drawPixelText(speechText, npcCenterX, npc.y - 40);
+                    }
+                }
+            }
+
+            // Gambar Pemain dengan fungsi baru
+            drawPlayer();
+        }
+
+        // Loop Utama Game
+        function gameLoop() {
+            updateGame(); // updateGame will return early if paused
+            drawGame();
+            if (gameState === 'playing' || gameState === 'paused') {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Fungsi Transisi Setelah Menang
+        function finishGame() {
+            gameState = 'finished';
+            document.getElementById('game-container').style.display = 'none';
+            
+            const greetingContainer = document.getElementById('greeting-container');
+            greetingContainer.style.display = 'block';
+            
+            const audio = document.getElementById('romanticMusic');
+            audio.volume = 0.5; 
+            audio.play().catch(e => console.log("Audio play failed, need interaction first.", e));
+
+            initCursorEffect();
+            greetingContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        // ================= EFEK KURSOR HATI =================
+        function initCursorEffect() {
+            // Ubah target ke document.body agar efek muncul di mana saja (termasuk game screen)
+            const target = document.body; 
+            let isThrottled = false;
+
+            target.addEventListener('mousemove', function(e) {
+                if (isThrottled) return;
+                isThrottled = true;
+                setTimeout(() => isThrottled = false, 50); 
+                createHeart(e.pageX, e.pageY);
+            });
+        }
+
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-trail');
+            heart.innerHTML = '❤️'; 
+            const randomOffsetX = (Math.random() - 0.5) * 20;
+            heart.style.left = (x + randomOffsetX) + 'px';
+            heart.style.top = y + 'px';
+            const randomSize = Math.random() * (24 - 12) + 12;
+            heart.style.fontSize = randomSize + 'px';
+            heart.style.position = 'absolute'; // Pastikan absolute agar ikut koordinat page
+            heart.style.pointerEvents = 'none'; // Agar tidak mengganggu klik
+
+            document.body.appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        }
+
+        // ================= VERSE CAROUSEL =================
+        let currentVerseCheck = 0;
+        const totalSlides = 5; // 4 original + 1 clone
+        let isTransitioning = false;
+        let verseInterval;
+
+        const track = document.getElementById('verseTrack');
+        const progressSegments = document.querySelectorAll('.progress-segment');
+
+        function updateProgressBar() {
+            // Remove active from all
+            progressSegments.forEach(seg => seg.classList.remove('active'));
+            
+            // Determine active index (handle clone at index 4 -> 0)
+            let activeIndex = currentVerseCheck;
+            if (currentVerseCheck === totalSlides - 1) {
+                activeIndex = 0;
+            }
+            // Use modulo just in case
+            if (totalSlides > 1) {
+                activeIndex = activeIndex % (totalSlides - 1); 
+            }
+
+            if (document.getElementById(`seg-${activeIndex}`)) {
+                document.getElementById(`seg-${activeIndex}`).classList.add('active');
+                document.getElementById(`seg-${activeIndex}`).classList.add('bg-hot-pink');
+                document.getElementById(`seg-${activeIndex}`).classList.add('w-10');
+                document.getElementById(`seg-${activeIndex}`).classList.add('shadow-[0_0_8px_#ff1493]');
+            }
+        }
+
+        function updateSlidePosition() {
+            track.style.transform = `translateX(-${currentVerseCheck * 100}%)`;
+            updateProgressBar();
+        }
+
+        function nextVerse() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            track.style.transition = "transform 0.5s ease-in-out";
+            currentVerseCheck++;
+            updateSlidePosition();
+
+            // Check if reached the end clone
+            if (currentVerseCheck === totalSlides - 1) {
+                setTimeout(() => {
+                    track.style.transition = "none";
+                    currentVerseCheck = 0;
+                    updateSlidePosition();
+                    isTransitioning = false;
+                }, 500); // Wait for transition to finish
+            } else {
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 500);
+            }
+            resetVerseInterval(); 
+        }
+
+        function prevVerse() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            if (currentVerseCheck === 0) {
+                track.style.transition = "none";
+                currentVerseCheck = totalSlides - 1;
+                updateSlidePosition();
+                setTimeout(() => {
+                    track.style.transition = "transform 0.5s ease-in-out";
+                    currentVerseCheck--;
+                    updateSlidePosition();
+                    setTimeout(() => isTransitioning = false, 500);
+                }, 10);
+            } else {
+                track.style.transition = "transform 0.5s ease-in-out";
+                currentVerseCheck--;
+                updateSlidePosition();
+                setTimeout(() => isTransitioning = false, 500);
+            }
+            resetVerseInterval();
+        }
+
+        function startVerseInterval() {
+            // Only auto-play forward
+            if (verseInterval) clearInterval(verseInterval);
+            verseInterval = setInterval(() => {
+                // Use internal logic to avoid resetting interval inside interval
+                const nextBtn = document.querySelector('.verse-controls button:last-child');
+                // Simulate next click logic without reset
+                 if (isTransitioning) return;
+                isTransitioning = true;
+                track.style.transition = "transform 0.5s ease-in-out";
+                currentVerseCheck++;
+                updateSlidePosition();
+
+                if (currentVerseCheck === totalSlides - 1) {
+                    setTimeout(() => {
+                        track.style.transition = "none";
+                        currentVerseCheck = 0;
+                        updateSlidePosition();
+                        isTransitioning = false;
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        isTransitioning = false;
+                    }, 500);
+                }
+            }, 6500); // 6.5 detik 
+        }
+
+        function resetVerseInterval() {
+            clearInterval(verseInterval);
+            startVerseInterval();
+        }
+
+        // ================= NAVIGATION & MENU Logic =================
+        function toggleMenu() {
+            const menu = document.getElementById('menu-dropdown');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                gameState = 'playing'; // Resume game if menu closed
+            } else {
+                menu.style.display = 'block';
+                gameState = 'paused'; // Pause game when menu open
+            }
+        }
+
+        function openValentinePassword() {
+            toggleMenu(); // Close menu
+            showPasswordModal(); // Trigger password modal directly
+        }
+
+        function backToGame() {
+            // Stop music
+            const audio = document.getElementById('romanticMusic');
+            audio.pause();
+            audio.currentTime = 0;
+
+            // Hide greeting, show game
+            document.getElementById('greeting-container').style.display = 'none';
+            // Restore flex display for proper centering
+            document.getElementById('game-container').style.display = 'flex'; 
+            window.scrollTo(0, 0); // Reset scroll position to top
+            
+            // Reset state
+            gameState = 'playing';
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Helper to close menu if clicking outside (optional, but good UX)
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('menu-dropdown');
+            const burger = document.getElementById('burger-icon');
+            if (!menu.contains(event.target) && !burger.contains(event.target) && menu.style.display === 'block') {
+               toggleMenu();
+            }
+        });
+
+        // MULAI GAME
+        initCursorEffect(); // Jalankan efek kursor sejak awal
+        startVerseInterval(); // Mulai carousel ayat
+        gameLoop();
+
+    </script>
+</body>
+</html>
