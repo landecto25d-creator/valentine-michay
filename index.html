@@ -309,7 +309,33 @@
         </div>
     </div>
 
-    <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative pt-20 md:pt-12 md:px-5">
+    <!-- Volume Controls -->
+    <div id="volume-controls" class="fixed top-4 right-4 z-50">
+        <button id="volume-btn" class="bg-white border-2 border-black p-2 rounded shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-gray-100 cursor-pointer" onclick="toggleVolumeMenu()">
+            <!-- Pixelated Speaker Icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M11 5L6 9H2V15H6L11 19V5ZM15.5 12C15.5 10.28 14.5 8.82 13 8.1V15.9C14.5 15.18 15.5 13.72 15.5 12ZM13 3.82V5.88C15.8 6.72 18 9.22 18 12C18 14.78 15.8 17.28 13 18.12V20.18C17 19.29 20 15.96 20 12C20 8.04 17 4.71 13 3.82Z"/>
+            </svg>
+        </button>
+        <div id="volume-menu" class="hidden absolute right-0 mt-2 bg-white border-2 border-black p-3 rounded shadow-[4px_4px_0px_#000] w-40 font-mono text-xs">
+            <div class="mb-3">
+                <label class="block font-bold mb-1">MUSIC</label>
+                <input type="range" id="bgm-slider" min="0" max="1" step="0.1" value="0.2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-hot-pink" oninput="updateBGMVolume(this.value)">
+            </div>
+            <div>
+                <label class="block font-bold mb-1">SFX</label>
+                <input type="range" id="sfx-slider" min="0" max="1" step="0.1" value="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-hot-pink" oninput="updateSFXVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop>
+        <source src="assets/Ariana Grande_ _Moonlight_ (Official Album Instrumental) [SBRTagN51wM].mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative pt-20 md:pt-12 md:px-5 opacity-0 transition-opacity duration-1000">
         <!-- Back Button -->
         <button id="back-to-game-btn" onclick="backToGame()" class="absolute top-3 left-3 md:top-5 md:left-5 bg-hot-pink text-white border-2 border-white py-1 px-3 md:py-2 md:px-4 rounded-full cursor-pointer font-bold font-mono text-sm md:text-base shadow-[2px_2px_0px_#ff1493] md:shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600 z-10">
             ← Back
@@ -411,7 +437,7 @@
         bgOutside.src = "assets/bg rumah.png";
 
         const bgInside = new Image();
-        bgInside.src = "assets/bg  dalam rumah.png"; 
+        bgInside.src = "assets/bg dalam rumah neww.png"; 
 
         // --- ASSETS KARAKTER (MICHAY) ---
         const imgMichayIdle = new Image();
@@ -497,6 +523,7 @@
                     } else if (player.grounded) {
                         player.dy = player.jumpStrength;
                         player.grounded = false;
+                        playJumpSound();
                     }
                 } else {
                     // KELUAR RUMAH (Area pintu di kiri agak lebar)
@@ -505,6 +532,7 @@
                     } else if (player.grounded) {
                          player.dy = player.jumpStrength;
                          player.grounded = false;
+                         playJumpSound();
                     }
                 }
             }
@@ -518,11 +546,169 @@
         function enterHouse() {
             isInside = true;
             player.x = 50; // Reset posisi ke kiri ruangan
+            playDoorOpen();
         }
 
         function exitHouse() {
             isInside = false;
             player.x = doorPositionX; // Kembali ke depan pintu luar
+            playDoorClose();
+        }
+
+        // ================= RETRO SOUND EFFECTS & BG MUSIC =================
+        let audioCtx;
+        let stepTimer = 0;
+        let isMusicPlaying = false;
+        let doorOpenBuffer = null;
+        let doorCloseBuffer = null;
+        
+        // Volume Control Variables
+        let sfxMasterGain = null;
+        let bgmVolume = 0.2;
+        let sfxVolume = 0.5;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create Master SFX Gain Node
+                sfxMasterGain = audioCtx.createGain();
+                sfxMasterGain.gain.value = sfxVolume;
+                sfxMasterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playBackgroundMusic();
+            loadDoorSounds();
+        }
+
+        // --- Volume UI Functions ---
+        function toggleVolumeMenu() {
+            const menu = document.getElementById('volume-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function updateBGMVolume(val) {
+            bgmVolume = parseFloat(val);
+            const music = document.getElementById('bgMusic');
+            if (music) music.volume = bgmVolume;
+        }
+
+        function updateSFXVolume(val) {
+            sfxVolume = parseFloat(val);
+            if (sfxMasterGain) {
+                sfxMasterGain.gain.value = sfxVolume;
+            }
+        }
+
+        function loadDoorSounds() {
+            if (doorOpenBuffer && doorCloseBuffer) return; // Already loaded
+            
+            // Load Open Sound
+            fetch('assets/door open.wav')
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+                .then(audioBuffer => {
+                    doorOpenBuffer = audioBuffer;
+                })
+                .catch(e => console.error("Error loading door open:", e));
+
+            // Load Close Sound
+            fetch('assets/door close.wav')
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+                .then(audioBuffer => {
+                    doorCloseBuffer = audioBuffer;
+                })
+                .catch(e => console.error("Error loading door close:", e));
+        }
+
+        function playBackgroundMusic() {
+            const music = document.getElementById('bgMusic');
+            if (music && !isMusicPlaying) {
+                music.volume = bgmVolume; // Use variable
+                music.play().then(() => {
+                    isMusicPlaying = true;
+                }).catch(error => {
+                    console.log("Autoplay prevented. Music will start on interaction.");
+                });
+            }
+        }
+
+        function playJumpSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            oscillator.connect(gainNode);
+            // Connect to Master SFX Gain instead of destination
+            gainNode.connect(sfxMasterGain); 
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playWalkSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(100, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+
+            oscillator.connect(gainNode);
+            // Connect to Master SFX Gain instead of destination
+            gainNode.connect(sfxMasterGain);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playDoorOpen() {
+            initAudio();
+            if (!audioCtx || !doorOpenBuffer) return;
+
+            const source = audioCtx.createBufferSource();
+            
+            source.buffer = doorOpenBuffer;
+            
+            // Connect source -> Master SFX Gain
+            source.connect(sfxMasterGain);
+            
+            source.start(audioCtx.currentTime);
+        }
+
+        function playDoorClose() {
+            initAudio();
+            if (!audioCtx || !doorCloseBuffer) return;
+
+            const source = audioCtx.createBufferSource();
+            
+            source.buffer = doorCloseBuffer;
+            
+            // Connect source -> Master SFX Gain
+            source.connect(sfxMasterGain);
+
+            source.start(audioCtx.currentTime); 
         }
 
         // Fungsi Update Fisika & Animasi
@@ -541,6 +727,17 @@
             } else {
                 player.dx = 0;
                 player.state = 'idle';
+            }
+
+            // Audio Langkah Kaki
+            if (player.state === 'walk' && player.grounded) {
+                stepTimer++;
+                if (stepTimer > 15) {
+                    playWalkSound();
+                    stepTimer = 0;
+                }
+            } else {
+                stepTimer = 15; // Reset agar langsung bunyi saat mulai jalan lagi
             }
 
             player.x += player.dx;
@@ -868,9 +1065,14 @@
             const greetingContainer = document.getElementById('greeting-container');
             greetingContainer.style.display = 'block';
             
-            const audio = document.getElementById('romanticMusic');
-            audio.volume = 0.5; 
-            audio.play().catch(e => console.log("Audio play failed, need interaction first.", e));
+            // Trigger Fade In (Allow browser to paint display:block first)
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    greetingContainer.classList.remove('opacity-0');
+                });
+            });
+            
+            // Background music continues playing...
 
             initCursorEffect();
             greetingContainer.scrollIntoView({ behavior: 'smooth' });
@@ -1042,13 +1244,12 @@
         }
 
         function backToGame() {
-            // Stop music
-            const audio = document.getElementById('romanticMusic');
-            audio.pause();
-            audio.currentTime = 0;
+            // Background music continues playing...
 
             // Hide greeting, show game
-            document.getElementById('greeting-container').style.display = 'none';
+            const greetingContainer = document.getElementById('greeting-container');
+            greetingContainer.classList.add('opacity-0'); // Reset opacity
+            greetingContainer.style.display = 'none';
             // Restore flex display for proper centering
             document.getElementById('game-container').style.display = 'flex'; 
             window.scrollTo(0, 0); // Reset scroll position to top
@@ -1134,6 +1335,37 @@
         });
 
         setupMobileControls();
+
+        // Auto-play background music on page load
+        (function attemptAutoplay() {
+            const music = document.getElementById('bgMusic');
+            if (music) {
+                music.volume = bgmVolume;
+                music.play()
+                    .then(() => {
+                        isMusicPlaying = true;
+                        console.log("Background music started automatically");
+                    })
+                    .catch(error => {
+                        console.log("Autoplay blocked. Music will start on first interaction.");
+                        // Add one-time listener for any user interaction
+                        const startMusic = () => {
+                            if (!isMusicPlaying) {
+                                music.volume = bgmVolume;
+                                music.play().then(() => {
+                                    isMusicPlaying = true;
+                                }).catch(e => console.log("Still blocked:", e));
+                            }
+                            document.removeEventListener('click', startMusic);
+                            document.removeEventListener('keydown', startMusic);
+                            document.removeEventListener('touchstart', startMusic);
+                        };
+                        document.addEventListener('click', startMusic, { once: true });
+                        document.addEventListener('keydown', startMusic, { once: true });
+                        document.addEventListener('touchstart', startMusic, { once: true });
+                    });
+            }
+        })();
 
         // MULAI GAME
         initCursorEffect(); // Jalankan efek kursor sejak awal
