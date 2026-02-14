@@ -84,17 +84,175 @@
             animation: floatUp 1s ease-out forwards;
             z-index: 9999;
         }
+
+        /* Mobile Controls Styling */
+        .control-btn {
+            background-color: rgba(245, 245, 220, 0.5); /* Transparent Beige */
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            touch-action: manipulation; /* Disable double-tap zoom */
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(0, 0, 0, 0.7);
+            font-weight: bold;
+            font-family: monospace;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, background-color 0.1s;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background-color: rgba(245, 245, 220, 0.8);
+        }
+
+        #mobile-controls {
+            display: none; /* Hidden by default (desktop) */
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Let clicks pass through empty areas */
+            z-index: 50;
+        }
+
+        /* Show on Touch Devices / Small Screens */
+        @media (pointer: coarse), (max-width: 1024px) {
+            #mobile-controls {
+                display: block;
+            }
+        }
+
+        /* Portrait Mode: Gameboy Style */
+        @media (orientation: portrait) and (max-width: 1024px) {
+            #game-container {
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 20px;
+                height: 100svh; /* Use svh for better mobile handling */
+            }
+            
+            canvas {
+                width: 95% !important;
+                height: auto !important;
+                max-width: 600px;
+                border: 4px solid black;
+                margin-bottom: 20px;
+                /* Aspect ratio hack handled by JS or intrinsic size */
+            }
+
+            #mobile-controls {
+                position: relative;
+                height: auto;
+                flex-grow: 1;
+                pointer-events: auto;
+                display: flex !important;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 30px;
+                margin-bottom: 20px;
+            }
+
+            #dpad-area {
+                position: relative;
+                width: 180px;
+                height: 180px;
+            }
+
+
+
+            .dpad-btn {
+                position: absolute;
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+
+
+            #btn-up { top: 0; left: 60px; }
+            #btn-left { top: 60px; left: 0; }
+            #btn-right { top: 60px; left: 120px; }
+            #btn-down { top: 120px; left: 60px; display: none; /* No down movement needed */ }
+
+
+
+            /* Mobile Instructions Position - Adjusted */
+            #game-instructions {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                margin-top: 40px; /* Clear the burger menu */
+                margin-bottom: 10px;
+                background: rgba(255, 255, 255, 0.7) !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 4px 8px !important;
+                width: 85%;
+                font-size: 0.75rem !important; /* Smaller text */
+                line-height: 1.2;
+            }
+            #game-instructions p {
+                margin: 1px 0;
+            }
+        }
+
+        /* Landscape Mode: Split Controls */
+        @media (orientation: landscape) and (max-width: 1024px) {
+            #game-container {
+                height: 100svh;
+            }
+
+            canvas {
+                height: 85vh !important;
+                width: auto !important;
+                max-width: 85%;
+            }
+
+            #mobile-controls {
+                display: block !important;
+            }
+
+            #dpad-area {
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                width: 160px;
+                height: 160px;
+                pointer-events: auto;
+            }
+
+
+
+            .dpad-btn {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            
+            #btn-up { top: 0; left: 55px; }
+            #btn-left { top: 55px; left: 0; }
+            #btn-right { top: 55px; left: 110px; }
+
+
+        }
+
     </style>
 
     <!-- Modal Overlay Container -->
-    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-50 hidden justify-center items-center">
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[300] hidden justify-center items-center">
         <!-- Modal 1: Konfirmasi -->
         <div id="modal-confirm" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
             <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
             <h3 class="mt-0 mb-4 text-lg font-bold">Terima atau tidak?</h3>
             <div class="flex justify-center gap-2.5">
-                <button class="bg-green-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-green-600 rounded" onclick="showPasswordModal()">Iya</button>
-                <button class="bg-red-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-red-600 rounded" onclick="handleNo()">Tidak</button>
+                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="showPasswordModal()">Iya</button>
+                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-800 rounded" onclick="handleNo()">Tidak</button>
             </div>
         </div>
 
@@ -102,17 +260,17 @@
         <div id="modal-password" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
             <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
             <h3 class="mt-0 mb-4 text-lg font-bold">Password?</h3>
-            <input type="password" id="passwordInput" placeholder="Masukkan password..." class="w-full p-2 mb-2 border-2 border-black text-sm font-mono box-border rounded">
+            <input type="password" id="passwordInput" placeholder="Masukkan password..." class="w-full p-2 mb-2 border-2 border-black text-sm font-mono box-border rounded" onkeydown="if(event.key === 'Enter') checkPassword()">
             <p class="text-[10px] -mt-1 text-gray-500">*clue : pass laptop ku, tanggal besok</p>
             <br>
-            <button class="bg-blue-500 text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-blue-600 mt-2 rounded" onclick="checkPassword()">Submit</button>
+            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 mt-2 rounded" onclick="checkPassword()">Submit</button>
         </div>
 
         <!-- Modal 3: Error -->
         <div id="modal-error" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
              <h3 class="mt-0 mb-4 text-lg font-bold text-red-600">Kok salah sayangg ☹️</h3>
             <p class="mb-5 text-sm">ingat ingat lagi cayangggkuu ☹️</p>
-            <button class="bg-yellow-400 text-black border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-yellow-500 rounded" onclick="retryPassword()">Isi Ulang Password</button>
+            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="retryPassword()">Isi Ulang Password</button>
         </div>
         
         <!-- Modal 4: Force Yes (New) -->
@@ -123,31 +281,43 @@
 
     <!-- Game Container with Burger Menu -->
     <div id="game-container" class="flex justify-center items-center h-screen bg-transparent">
-        <!-- Burger Menu -->
-        <div id="burger-menu-container" class="absolute top-2.5 left-2.5 z-[100]">
+        <!-- Burger Menu - High Z-Index -->
+        <div id="burger-menu-container" class="absolute top-2.5 left-2.5 z-[200]">
             <div id="burger-icon" onclick="toggleMenu()" class="text-3xl cursor-pointer text-black select-none drop-shadow-[2px_2px_0_#fff]">☰</div>
             <div id="menu-dropdown" class="hidden bg-white border-2 border-black p-2.5 rounded mt-1.5 shadow-[3px_3px_0px_#000]">
                 <div onclick="openValentinePassword()" class="cursor-pointer font-mono font-bold text-deep-pink hover:text-pink-600">Ucapan Valentine 💌</div>
             </div>
         </div>
 
-        <div id="game-instructions" class="absolute top-5 left-1/2 -translate-x-1/2 bg-white/80 px-5 py-2.5 rounded-lg text-center border-2 border-black shadow-md">
-            <p>Gunakan A / D untuk bergerak.</p>
-            <p>W / Spasi untuk lompat & interaksi.</p>
+        <div id="game-instructions" class="absolute top-5 left-1/2 -translate-x-1/2 bg-white/80 px-5 py-2.5 rounded-lg text-center border-2 border-black shadow-md z-[60]">
+            <p id="instr-move">Gunakan A / D untuk bergerak.</p>
+            <p id="instr-jump">W / Spasi untuk lompat & interaksi.</p>
             <p>Temui Tigor di dalam rumah!</p>
         </div>
         <canvas id="gameCanvas" width="800" height="400" class="border-4 border-black bg-transparent pixelated shadow-xl"></canvas>
+
+        <!-- Mobile Controls Container -->
+        <div id="mobile-controls">
+            <!-- D-Pad -->
+            <div id="dpad-area">
+                <div id="btn-up" class="control-btn dpad-btn">▲</div>
+                <div id="btn-left" class="control-btn dpad-btn">◀</div>
+                <div id="btn-right" class="control-btn dpad-btn">▶</div>
+            </div>
+
+
+        </div>
     </div>
 
-    <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative">
+    <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative pt-20 md:pt-12 md:px-5">
         <!-- Back Button -->
-        <button id="back-to-game-btn" onclick="backToGame()" class="absolute top-5 left-5 bg-hot-pink text-white border-2 border-white py-2 px-4 rounded-full cursor-pointer font-bold font-mono shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600">
-            ← Back to Game
+        <button id="back-to-game-btn" onclick="backToGame()" class="absolute top-3 left-3 md:top-5 md:left-5 bg-hot-pink text-white border-2 border-white py-1 px-3 md:py-2 md:px-4 rounded-full cursor-pointer font-bold font-mono text-sm md:text-base shadow-[2px_2px_0px_#ff1493] md:shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600 z-10">
+            ← Back
         </button>
         
-        <h1 class="main-title text-deep-pink text-5xl mb-8 uppercase tracking-widest font-bold">Happy Valentine's Day!</h1>
+        <h1 class="main-title text-deep-pink text-3xl md:text-5xl mb-12 md:mb-8 uppercase tracking-widest font-bold break-words px-2">Happy Valentine's Day!</h1>
         <!-- Verse Carousel -->
-        <div class="verse-wrapper relative w-4/5 mx-auto my-5">
+        <div class="verse-wrapper relative w-full px-2 md:w-4/5 mx-auto mt-10 mb-5 md:my-5">
             <div class="verse-controls absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
                 <button onclick="prevVerse()" class="bg-hot-pink text-white border-none rounded-full w-6 h-6 cursor-pointer font-bold hover:bg-pink-600">&#10094;</button>
                 <button onclick="nextVerse()" class="bg-hot-pink text-white border-none rounded-full w-6 h-6 cursor-pointer font-bold hover:bg-pink-600">&#10095;</button>
@@ -185,13 +355,13 @@
 
         <!-- Progress Bar -->
         <div class="verse-progress-container flex justify-center gap-2 mt-4">
-            <div class="progress-segment active w-8 h-1 bg-pink-300 rounded transition-all duration-300 shadow-[0_0_8px_#ff1493] bg-hot-pink w-10" id="seg-0"></div>
+            <div class="progress-segment active w-10 h-1 bg-hot-pink rounded transition-all duration-300 shadow-[0_0_8px_#ff1493]" id="seg-0"></div>
             <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-1"></div>
             <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-2"></div>
             <div class="progress-segment w-8 h-1 bg-pink-300 rounded transition-all duration-300" id="seg-3"></div>
         </div>
 
-        <div class="message-container bg-white border-2 border-dashed border-hot-pink p-5 mx-auto my-5 w-4/5 rounded-2xl">
+        <div class="message-container bg-white border-2 border-dashed border-hot-pink p-4 md:p-5 mx-auto my-5 w-full px-4 md:w-4/5 rounded-2xl">
             <strong class="text-xl text-deep-pink">HAPPY VALENTINE'S DAYY SAYANGGGG</strong>
             
             <p class="my-4">
@@ -213,14 +383,14 @@
             </p>
         </div>
 
-        <div class="photo-gallery grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8 px-5">
-            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[-2deg] transition-transform hover:scale-105 hover:z-10 relative">
+        <div class="photo-gallery flex flex-wrap justify-center gap-5 mt-8 px-5">
+            <div class="photo-frame w-full max-w-[300px] sm:w-72 bg-white p-2.5 pb-10 shadow-md rotate-[-2deg] transition-transform hover:scale-105 hover:z-10 relative">
                 <img src="assets/IMG-20250510-WA0075.jpg" alt="Foto 1" class="w-full h-auto block">
             </div>
-            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[3deg] transition-transform hover:scale-105 hover:z-10 relative">
+            <div class="photo-frame w-full max-w-[300px] sm:w-72 bg-white p-2.5 pb-10 shadow-md rotate-[3deg] transition-transform hover:scale-105 hover:z-10 relative">
                 <img src="assets/IMG-20250516-WA0088.jpg" alt="Foto 2" class="w-full h-auto block">
             </div>
-            <div class="photo-frame bg-white p-2.5 pb-10 shadow-md rotate-[-1deg] transition-transform hover:scale-105 hover:z-10 relative">
+            <div class="photo-frame w-full max-w-[300px] sm:w-72 bg-white p-2.5 pb-10 shadow-md rotate-[-1deg] transition-transform hover:scale-105 hover:z-10 relative">
                 <img src="assets/IMG-20250811-WA0072.jpg" alt="Foto 3" class="w-full h-auto block">
         </div>
     </div>
@@ -305,6 +475,7 @@
         // Lingkungan Game
         const groundHeight = 80; 
         const doorPositionX = 400; // Posisi pintu di TENGAH (sesuai request)
+        let isMobile = false; // Flag untuk mobile device
 
         const keys = {
             right: false,
@@ -434,8 +605,8 @@
                  if (distanceToNPC < 200) {
                      npc.speechTimer++;
                      
-                     // Trigger Modal setelah selesai bicara (180 frame = 3 detik)
-                     if (npc.speechTimer >= 180 && !npc.hasTriggeredModal) {
+                     // Trigger Modal setelah selesai bicara (420 frame = 7 detik)
+                     if (npc.speechTimer >= 420 && !npc.hasTriggeredModal) {
                          showConfirmModal();
                          npc.hasTriggeredModal = true;
                      }
@@ -586,6 +757,14 @@
                 ctx.restore();
             }
 
+            // --- RESPONSIVE SCALING ---
+            // Calculate scale based on canvas display size vs internal resolution
+            // We use this to scale drawing if needed, or rely on CSS scaling.
+            // Since we set canvas internal width/height fixed (800x400),
+            // and CSS scales it, the drawing logic works fine as long as we use internal coords.
+            // However, touch events might need coordinate translation if we used them for clicking inside canvas.
+            // But here controls are external (D-pad), so logic remains same.
+
             if (!isInside) {
                 // --- SCENE 1: LUAR RUMAH ---
                 if (bgOutside.complete) {
@@ -597,7 +776,8 @@
                 
                 // Teks petunjuk di atas pintu
                 if (Math.abs(player.x - doorPositionX) < 50) {
-                     drawPixelText("Tekan W Untuk Masuk", doorPositionX, canvas.height - groundHeight - 110);
+                     const promptText = isMobile ? "Tekan ATAS Untuk Masuk" : "Tekan W Untuk Masuk";
+                     drawPixelText(promptText, doorPositionX, canvas.height - groundHeight - 110);
                 }
             } else {
                 // --- SCENE 2: DALAM RUMAH ---
@@ -610,7 +790,8 @@
                 
                 // Teks petunjuk KELUAR (di sebelah kiri)
                 if (player.x < 180) {
-                    drawPixelText("Tekan W Untuk Keluar", 120, canvas.height - groundHeight - 180);
+                    const promptText = isMobile ? "Tekan ATAS Untuk Keluar" : "Tekan W Untuk Keluar";
+                    drawPixelText(promptText, 120, canvas.height - groundHeight - 180);
                 }
 
                 // NPC (Tigor) - Hanya di dalam
@@ -648,12 +829,15 @@
                 // 1.5 detik = ~90 frame (asumsi 60fps)
                 if (npc.speechTimer > 0) {
                     let speechText = "";
-                    if (npc.speechTimer < 90) {
-                        // 0 - 1.5 detik
+                    if (npc.speechTimer < 120) {
+                        // 0 - 2 detik
                         speechText = "hai sayangkuu";
-                    } else if (npc.speechTimer < 250) {
-                        // 1.5 - 3 detik
-                        speechText = "mauka kasih ko sesuatuu";
+                    } else if (npc.speechTimer < 240) {
+                        // 2 - 4 detik
+                        speechText = "happy valentine's day";
+                    } else if (npc.speechTimer < 420) {
+                        // 4 - 7 detik
+                        speechText = "mauka kasih liat ko sesuatuu";
                     }
                     
                     if (speechText) {
@@ -736,25 +920,24 @@
         const progressSegments = document.querySelectorAll('.progress-segment');
 
         function updateProgressBar() {
-            // Remove active from all
-            progressSegments.forEach(seg => seg.classList.remove('active'));
-            
             // Determine active index (handle clone at index 4 -> 0)
             let activeIndex = currentVerseCheck;
             if (currentVerseCheck === totalSlides - 1) {
                 activeIndex = 0;
             }
-            // Use modulo just in case
-            if (totalSlides > 1) {
-                activeIndex = activeIndex % (totalSlides - 1); 
-            }
 
-            if (document.getElementById(`seg-${activeIndex}`)) {
-                document.getElementById(`seg-${activeIndex}`).classList.add('active');
-                document.getElementById(`seg-${activeIndex}`).classList.add('bg-hot-pink');
-                document.getElementById(`seg-${activeIndex}`).classList.add('w-10');
-                document.getElementById(`seg-${activeIndex}`).classList.add('shadow-[0_0_8px_#ff1493]');
-            }
+            // Iterate through all actual segments (0, 1, 2, 3)
+            progressSegments.forEach((seg, index) => {
+                if (index === activeIndex) {
+                    // Active State
+                    seg.classList.add('active', 'bg-hot-pink', 'w-10', 'shadow-[0_0_8px_#ff1493]');
+                    seg.classList.remove('bg-pink-300', 'w-8');
+                } else {
+                    // Inactive State
+                    seg.classList.remove('active', 'bg-hot-pink', 'w-10', 'shadow-[0_0_8px_#ff1493]');
+                    seg.classList.add('bg-pink-300', 'w-8');
+                }
+            });
         }
 
         function updateSlidePosition() {
@@ -870,8 +1053,18 @@
             document.getElementById('game-container').style.display = 'flex'; 
             window.scrollTo(0, 0); // Reset scroll position to top
             
-            // Reset state
+            // Reset state - FULL RESET
             gameState = 'playing';
+            isInside = false; // Reset to outside
+            player.x = 50; // Reset position
+            player.y = 300; // Reset Y (just in case)
+            player.dx = 0;
+            player.dy = 0;
+            player.state = 'idle'; // Reset animation state
+            player.facingRight = true;
+            npc.speechTimer = 0; // Reset NPC logic
+            npc.hasTriggeredModal = false;
+
             requestAnimationFrame(gameLoop);
         }
         
@@ -883,6 +1076,64 @@
                toggleMenu();
             }
         });
+
+        // ================= MOBILE CONTROLS LOGIC =================
+        const setupMobileControls = () => {
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const btnUp = document.getElementById('btn-up'); // Jump / Interact
+
+            // Helper to simulate key events
+            const setKey = (code, value) => {
+                const eventType = value ? 'keydown' : 'keyup';
+                const event = new KeyboardEvent(eventType, { code: code });
+                document.dispatchEvent(event);
+            };
+
+            const addTouchListeners = (element, keyCode) => {
+                if(!element) return;
+                
+                element.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // Prevent scroll/zoom
+                    setKey(keyCode, true);
+                    element.style.transform = "scale(0.9)";
+                }, { passive: false });
+
+                element.addEventListener('touchend', (e) => {
+                    e.preventDefault(); 
+                    setKey(keyCode, false);
+                    element.style.transform = "scale(1)";
+                });
+                
+                // Handle touch cancel/leave as keyup
+                element.addEventListener('touchcancel', (e) => setKey(keyCode, false));
+            };
+
+            addTouchListeners(btnLeft, 'KeyA');
+            addTouchListeners(btnRight, 'KeyD');
+            addTouchListeners(btnUp, 'KeyW'); // D-pad Up acts as W
+            
+            // Update Instructions for Touch Devices
+            // Hanya aktifkan jika touch screen DAN ukuran layar kecil (mobile/tablet)
+            // Ini mencegah laptop touch screen terdeteksi sebagai mobile
+            if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024) {
+                isMobile = true; // Set flag mobile
+                document.getElementById('instr-move').innerText = "Gunakan tombol panah untuk bergerak.";
+                document.getElementById('instr-jump').innerText = "Tombol ATAS untuk lompat & interaksi.";
+            }
+        };
+
+        // Global Listener untuk Modal Error (Enter -> Retry)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const errorModal = document.getElementById('modal-error');
+                if (errorModal && errorModal.style.display === 'block') {
+                    retryPassword();
+                }
+            }
+        });
+
+        setupMobileControls();
 
         // MULAI GAME
         initCursorEffect(); // Jalankan efek kursor sejak awal
