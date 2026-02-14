@@ -72,6 +72,17 @@
     </style>
 </head>
 <body class="font-mono overflow-x-hidden bg-white text-black">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 z-[9999] flex flex-col justify-center items-center bg-lavender-blush transition-opacity duration-700">
+        <div class="text-center">
+            <div class="text-5xl mb-6 animate-pulse">💖</div>
+            <h2 class="text-2xl font-bold text-deep-pink mb-4 font-mono tracking-wider">Loading...</h2>
+            <div class="w-48 h-3 bg-pink-200 rounded-full overflow-hidden border-2 border-hot-pink mx-auto">
+                <div id="loading-bar" class="h-full bg-hot-pink rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="loading-text" class="text-sm text-gray-500 mt-3 font-mono">Memuat aset...</p>
+        </div>
+    </div>
     <style>
         /* Keeping some animation keyframes as custom CCS is cleaner */
         @keyframes floatUp {
@@ -366,7 +377,7 @@
     </div>
 
     <!-- Game Container with Burger Menu -->
-    <div id="game-container" class="flex justify-center items-center h-screen bg-transparent">
+    <div id="game-container" class="flex justify-center items-center h-screen bg-transparent" style="display: none;">
         <!-- Burger Menu - High Z-Index -->
         <div id="burger-menu-container" class="absolute top-2.5 left-2.5 z-[200]">
             <div id="burger-icon" onclick="playButtonSound(); toggleMenu()" class="text-3xl cursor-pointer text-black select-none drop-shadow-[2px_2px_0_#fff]">☰</div>
@@ -1494,7 +1505,55 @@
             }
         });
 
-        gameLoop();
+        // ================= ASSET LOADING SCREEN =================
+        const allGameAssets = [
+            bgOutside, bgInside,
+            imgMichayIdle,
+            imgMichayWalk[0], imgMichayWalk[1],
+            imgMichayJump[0], imgMichayJump[1], imgMichayJump[2],
+            imgTigor
+        ];
+
+        let assetsLoaded = 0;
+        const totalAssets = allGameAssets.length;
+
+        function updateLoadingProgress() {
+            assetsLoaded++;
+            const percent = Math.round((assetsLoaded / totalAssets) * 100);
+            const bar = document.getElementById('loading-bar');
+            const text = document.getElementById('loading-text');
+            if (bar) bar.style.width = percent + '%';
+            if (text) text.textContent = 'Memuat aset... ' + percent + '%';
+
+            if (assetsLoaded >= totalAssets) {
+                // All assets loaded!
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loading-screen');
+                    const gameContainer = document.getElementById('game-container');
+                    
+                    loadingScreen.style.opacity = '0';
+                    gameContainer.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 700); // Match transition duration
+                    
+                    gameLoop();
+                }, 300); // Small delay for smooth UX
+            }
+        }
+
+        allGameAssets.forEach(img => {
+            if (img.complete) {
+                updateLoadingProgress();
+            } else {
+                img.addEventListener('load', updateLoadingProgress);
+                img.addEventListener('error', updateLoadingProgress); // Count errors too
+            }
+        });
+
+        initCursorEffect();
+        startVerseInterval();
 
     </script>
 </body>
