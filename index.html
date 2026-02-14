@@ -242,39 +242,125 @@
 
         }
 
+        /* === MOBILE RESPONSIVE POLISH === */
+        @media (max-width: 640px) {
+            /* Modal Sizing */
+            #modal-overlay > div {
+                min-width: unset !important;
+                width: 85vw;
+                max-width: 320px;
+                padding: 16px;
+            }
+            #modal-overlay h3 {
+                font-size: 1rem;
+            }
+            #modal-overlay button {
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            #modal-overlay input {
+                font-size: 0.85rem;
+            }
+
+            /* Volume Controls */
+            #volume-controls {
+                top: 8px !important;
+                right: 8px !important;
+            }
+            #volume-btn {
+                padding: 6px !important;
+            }
+            #volume-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+            #volume-menu {
+                width: 130px !important;
+                padding: 8px !important;
+            }
+
+            /* Greeting Page */
+            #greeting-container {
+                padding-top: 56px !important;
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+            #greeting-container .main-title {
+                font-size: 1.5rem !important;
+                letter-spacing: 0.1em !important;
+                margin-bottom: 1.5rem !important;
+            }
+
+            /* Verse Carousel */
+            .verse-wrapper {
+                margin-top: 1.5rem !important;
+                width: 100% !important;
+            }
+            .verse-slide {
+                padding: 10px 8px !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* Message Container */
+            .message-container {
+                padding: 12px !important;
+                font-size: 0.9rem;
+            }
+            .message-container strong {
+                font-size: 1.1rem !important;
+            }
+
+            /* Photo Gallery */
+            .photo-gallery {
+                gap: 12px !important;
+                padding: 0 12px !important;
+            }
+            .photo-frame {
+                max-width: 260px !important;
+                rotate: 0deg !important;
+                transform: none !important;
+            }
+
+            /* Burger Menu */
+            #burger-menu-container {
+                top: 8px !important;
+                left: 8px !important;
+            }
+        }
+
     </style>
 
     <!-- Modal Overlay Container -->
-    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[300] hidden justify-center items-center">
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[300] justify-center items-center" style="display: none;">
         <!-- Modal 1: Konfirmasi -->
-        <div id="modal-confirm" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
-            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
+        <div id="modal-confirm" class="bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]" style="display: none;">
+            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="playButtonSound(); closeModal()">×</div>
             <h3 class="mt-0 mb-4 text-lg font-bold">Terima atau tidak?</h3>
             <div class="flex justify-center gap-2.5">
-                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="showPasswordModal()">Iya</button>
-                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-800 rounded" onclick="handleNo()">Tidak</button>
+                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="playButtonSound(); showPasswordModal()">Iya</button>
+                <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-800 rounded" onclick="playButtonSound(); handleNo()">Tidak</button>
             </div>
         </div>
 
         <!-- Modal 2: Password -->
-        <div id="modal-password" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px] -translate-y-24 md:translate-y-0">
-            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="closeModal()">×</div>
+        <div id="modal-password" class="bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px] -translate-y-24 md:translate-y-0" style="display: none;">
+            <div class="absolute -top-3 -right-3 bg-black text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer font-bold border-2 border-white shadow-md text-sm hover:bg-red-500" onclick="playButtonSound(); closeModal()">×</div>
             <h3 class="mt-0 mb-4 text-lg font-bold">Password?</h3>
-            <input type="password" id="passwordInput" placeholder="Masukkan password..." class="w-full p-2 mb-2 border-2 border-black text-sm font-mono box-border rounded" onkeydown="if(event.key === 'Enter') checkPassword()">
+            <input type="password" id="passwordInput" placeholder="Masukkan password..." class="w-full p-2 mb-2 border-2 border-black text-sm font-mono box-border rounded">
             <p class="text-[10px] -mt-1 text-gray-500">*clue : pass laptop ku, tanggal besok</p>
             <br>
-            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 mt-2 rounded" onclick="checkPassword()">Submit</button>
+            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 mt-2 rounded" onclick="playButtonSound(); checkPassword()">Submit</button>
         </div>
 
         <!-- Modal 3: Error -->
-        <div id="modal-error" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+        <div id="modal-error" class="bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]" style="display: none;">
              <h3 class="mt-0 mb-4 text-lg font-bold text-red-600">Kok salah sayangg ☹️</h3>
             <p class="mb-5 text-sm">ingat ingat lagi cayangggkuu ☹️</p>
-            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="retryPassword()">Isi Ulang Password</button>
+            <button class="bg-hot-pink text-white border-2 border-black py-1.5 px-4 cursor-pointer font-bold text-sm shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-pink-600 rounded" onclick="playButtonSound(); retryPassword()">Isi Ulang Password</button>
         </div>
         
         <!-- Modal 4: Force Yes (New) -->
-        <div id="modal-force-yes" class="hidden bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]">
+        <div id="modal-force-yes" class="bg-white border-2 border-black p-5 rounded-lg text-center shadow-[4px_4px_0px_#000] relative min-w-[300px]" style="display: none;">
              <h3 class="mt-0 mb-4 text-lg font-bold">Harus iya sih 🙄</h3>
         </div>
     </div>
@@ -283,9 +369,9 @@
     <div id="game-container" class="flex justify-center items-center h-screen bg-transparent">
         <!-- Burger Menu - High Z-Index -->
         <div id="burger-menu-container" class="absolute top-2.5 left-2.5 z-[200]">
-            <div id="burger-icon" onclick="toggleMenu()" class="text-3xl cursor-pointer text-black select-none drop-shadow-[2px_2px_0_#fff]">☰</div>
+            <div id="burger-icon" onclick="playButtonSound(); toggleMenu()" class="text-3xl cursor-pointer text-black select-none drop-shadow-[2px_2px_0_#fff]">☰</div>
             <div id="menu-dropdown" class="hidden bg-white border-2 border-black p-2.5 rounded mt-1.5 shadow-[3px_3px_0px_#000]">
-                <div onclick="openValentinePassword()" class="cursor-pointer font-mono font-bold text-deep-pink hover:text-pink-600">Ucapan Valentine 💌</div>
+                <div onclick="playButtonSound(); openValentinePassword()" class="cursor-pointer font-mono font-bold text-deep-pink hover:text-pink-600">Ucapan Valentine 💌</div>
             </div>
         </div>
 
@@ -310,8 +396,8 @@
     </div>
 
     <!-- Volume Controls -->
-    <div id="volume-controls" class="fixed top-4 right-4 z-50">
-        <button id="volume-btn" class="bg-white border-2 border-black p-2 rounded shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-gray-100 cursor-pointer" onclick="toggleVolumeMenu()">
+    <div id="volume-controls" class="fixed top-4 right-4 z-[999]">
+        <button id="volume-btn" class="bg-white border-2 border-black p-2 rounded shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-none hover:bg-gray-100 cursor-pointer" onclick="playButtonSound(); toggleVolumeMenu()">
             <!-- Pixelated Speaker Icon -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M11 5L6 9H2V15H6L11 19V5ZM15.5 12C15.5 10.28 14.5 8.82 13 8.1V15.9C14.5 15.18 15.5 13.72 15.5 12ZM13 3.82V5.88C15.8 6.72 18 9.22 18 12C18 14.78 15.8 17.28 13 18.12V20.18C17 19.29 20 15.96 20 12C20 8.04 17 4.71 13 3.82Z"/>
@@ -337,7 +423,7 @@
 
     <div id="greeting-container" class="hidden min-h-screen py-12 px-5 text-center text-gray-800 relative pt-20 md:pt-12 md:px-5 opacity-0 transition-opacity duration-1000">
         <!-- Back Button -->
-        <button id="back-to-game-btn" onclick="backToGame()" class="absolute top-3 left-3 md:top-5 md:left-5 bg-hot-pink text-white border-2 border-white py-1 px-3 md:py-2 md:px-4 rounded-full cursor-pointer font-bold font-mono text-sm md:text-base shadow-[2px_2px_0px_#ff1493] md:shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600 z-10">
+        <button id="back-to-game-btn" onclick="playButtonSound(); backToGame()" class="absolute top-3 left-3 md:top-5 md:left-5 bg-hot-pink text-white border-2 border-white py-1 px-3 md:py-2 md:px-4 rounded-full cursor-pointer font-bold font-mono text-sm md:text-base shadow-[2px_2px_0px_#ff1493] md:shadow-[3px_3px_0px_#ff1493] hover:bg-pink-600 z-10">
             ← Back
         </button>
         
@@ -432,12 +518,13 @@
         // 👉 PERHATIAN: UBAH PASSWORD DI SINI!
         const correctPassword = "150225"; 
 
+
         // ================= ASSETS GAMBAR =================
         const bgOutside = new Image();
         bgOutside.src = "assets/bg rumah.png";
 
         const bgInside = new Image();
-        bgInside.src = "assets/bg dalam rumah neww.png"; 
+        bgInside.src = "assets/bg dalam rumah baru sekali.png"; 
 
         // --- ASSETS KARAKTER (MICHAY) ---
         const imgMichayIdle = new Image();
@@ -709,6 +796,32 @@
             source.connect(sfxMasterGain);
 
             source.start(audioCtx.currentTime); 
+        }
+
+        function playButtonSound() {
+            try {
+                initAudio();
+                if (!audioCtx || !sfxMasterGain) return;
+
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                // Short "blip" sound for button click
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(sfxMasterGain);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.05);
+            } catch(e) {
+                console.log('Button sound error:', e);
+            }
         }
 
         // Fungsi Update Fisika & Animasi
@@ -1370,6 +1483,17 @@
         // MULAI GAME
         initCursorEffect(); // Jalankan efek kursor sejak awal
         startVerseInterval(); // Mulai carousel ayat
+
+        // Password Enter Key Handler
+        document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                playButtonSound();
+                checkPassword();
+            }
+        });
+
         gameLoop();
 
     </script>
